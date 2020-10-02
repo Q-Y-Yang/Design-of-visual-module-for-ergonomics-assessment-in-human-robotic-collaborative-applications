@@ -2,7 +2,6 @@
 #!coding=utf-8
  
 #right code !
-#write by leo at 2018.04.26
 #function: 
 #display the frame from another node.
  
