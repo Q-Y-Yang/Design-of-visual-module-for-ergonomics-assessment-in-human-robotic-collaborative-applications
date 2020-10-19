@@ -3,7 +3,17 @@ Research Internship TUM
 
 Bild
 --
-ROS 2 node to subscribe images<br>
+ROS 2 node to subscribe images as input, process via Openpose and publish results<br>
 build: `colcon build --packages-select bild`<br>
 remember to source after building: `. install/setup.bash`<br>
 run: `ros2 run bild abo`<br>
+<br>
+Two result publishers: 1. publish images with keypoints annotations.<br>
+2. publish keypoints coordinates.<br>
+
+sub
+--
+A ROS 2 node to subscribe keypoints coordinates stored in arraysand save as a txt file in path "\home\student\pose".<br>
+Source ROS 2 workspace and then run:<br>
+`ros2 run sub sub`<br>
+
