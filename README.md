@@ -17,3 +17,8 @@ A ROS 2 node to subscribe keypoints coordinates stored in arraysand save as a tx
 Source ROS 2 workspace and then run:<br>
 `ros2 run sub sub`<br>
 
+syn_img_sub
+--
+Subscribe two topics synchronously using messages filters.
+Approximate time synchronously subscribe images from two cameras, make the synchronized images into one image for later processing by OpenPose.
+
