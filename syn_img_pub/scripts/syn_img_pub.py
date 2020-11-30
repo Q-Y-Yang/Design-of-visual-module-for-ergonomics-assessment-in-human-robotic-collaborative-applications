@@ -6,18 +6,29 @@ import message_filters
 import numpy as np
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
+import cv2
 
 
 
 def callback(side_data, front_data):
 	br = CvBridge()
-	side_img  = br.imgmsg_to_cv2(side_data, "bgr8")
+	side_img_raw  = br.imgmsg_to_cv2(side_data, "bgr8")
 	front_img = br.imgmsg_to_cv2(front_data, "bgr8")
+
+	side_imgcut = side_img_raw[:,:480,:]  #:480 or 160: to cut image 
+	h, w = side_imgcut.shape[:2]
+	center = (w // 2, h // 2)
+ 	Rotate = cv2.getRotationMatrix2D(center, 90, 1) #90 or -90
+	side_imgr = cv2.warpAffine(side_imgcut, Rotate, (w, h))
+
+	
  
- 
-	syn_img = np.concatenate((side_img, front_img), axis=1 )
- 
-	pub.publish(br.cv2_to_imgmsg(syn_img,"bgr8"))
+	syn_img = np.concatenate((side_imgr, front_img), axis=1 )
+
+	cv2.imwrite('/home/student/frontknee_dataset/'+str(side_data.header.seq)+'.jpg',syn_img)
+ 	syn_img = br.cv2_to_imgmsg(syn_img,"bgr8")
+	syn_img.header = side_data.header
+	pub.publish(syn_img)
 
 def img_synchronizer():
 	rospy.init_node('image_synchronizer', anonymous=True)
