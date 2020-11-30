@@ -24,3 +24,8 @@ syn_img_pub
 * Approximate time synchronously subscribe images(side view and front-top view) from two cameras, rotate and resize side view image to make the two synchronized images into one image for later processing by OpenPose.<br>
 Run: `rosrun syn_img_pub syn_img_pub.py`<br>
 
+ROS1 Bridge
+--
+* ROS1 Bridge is necessary to transmit synchronized images from ROS melodic to ROS eloquent.
+* Following the "build the ROS1 Bridge" and "run the ROS1 Bridge" parts of instructions [here](https://industrial-training-master.readthedocs.io/en/melodic/_source/session7/ROS1-ROS2-bridge.html) to build and run your ROS1 Bridge.
+
