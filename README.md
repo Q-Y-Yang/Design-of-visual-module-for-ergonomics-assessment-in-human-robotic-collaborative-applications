@@ -16,11 +16,6 @@ Two result publishers: <br>
 
 `ergonomic evaluation` module: performing ergonomic assessment according to Rapid Upper Limbs Assessment(RULA) criteria based on 2D body and hands keypoints obtained from openpose.<br>
 
-sub
---
-A ROS 2 node to subscribe keypoints coordinates stored in arraysand save as a txt file in path "\home\student\pose".<br>
-Source ROS 2 workspace and then run:<br>
-`ros2 run sub sub`<br>
 
 syn_img_pub
 --
