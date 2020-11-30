@@ -8,7 +8,7 @@ pose_ergonomic
 * Installing [openpose](https://github.com/CMU-Perceptual-Computing-Lab/openpose) firstly following its [prerequisites](https://github.com/CMU-Perceptual-Computing-Lab/openpose/blob/master/doc/installation/prerequisites.md) and [installation](https://github.com/CMU-Perceptual-Computing-Lab/openpose/tree/master/doc/installation) instructions.<br>
 * Build in ROS 2 workspace: `colcon build --packages-select pose_ergonomic`<br>
 Remember to source after building: `. install/setup.bash`<br>
-Run: `ros2 run bild pose_ergonomic.py`<br>
+Run: `ros2 run pose_ergonomic pose_ergonomic.py`<br>
 
 * Three result publishers: <br>
 1. '\pose': publish images with keypoints annotations.<br>
@@ -22,7 +22,7 @@ syn_img_pub
 --
 * Subscribe two topics synchronously using messages filters in ROS Melodic.<br>
 * Approximate time synchronously subscribe images(side view and front-top view) from two cameras, rotate and resize side view image to make the two synchronized images into one image for later processing by OpenPose.<br>
-Run: `rosrun syn_img_pub syn_img_pub.py`<br>
+Run: `rosrun syn_img_pub syn_img_pub`<br>
 
 ROS1 Bridge
 --
