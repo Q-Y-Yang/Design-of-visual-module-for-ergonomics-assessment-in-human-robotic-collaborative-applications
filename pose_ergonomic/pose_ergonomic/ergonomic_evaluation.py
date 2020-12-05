@@ -11,7 +11,7 @@ def line_angle(A1, A2, B1, B2):
 		angle = arctan * 180 / 3.1415926
 		return angle
 	else:
-		return 500
+		return 0
 
 
 
@@ -39,8 +39,8 @@ def lookup(UL,WW,N,TLE,MF1,MF2):
 	return scoreC
 
 def scoring(keypoints_front, keypoints_side):
-	score1 = 0
-	score2 = 0
+
+	#intermediate scores init
 	U = 0
 	L = 0
 	W1 = 0
@@ -58,41 +58,121 @@ def scoring(keypoints_front, keypoints_side):
 	#keypoints = np.delete(keypoints, -1, axis=1)   #delete confidence score
 	keypoints_side = np.delete(keypoints_side, -1, axis=1)
 	keypoints_front = np.delete(keypoints_front, -1, axis=1)
+
+	keypoints_side_zeros = np.where(keypoints_side[:,0]==0.0)
+	keypoints_front_zeros = np.where(keypoints_front[:,0]==0.0)
+
+	#check main keypoints coordinates
+	if keypoints_side[1,:] == [0,0] or keypoints_side[8,:] == [0,0] or keypoints_front[1,:] == [0,0] or keypoints_front[8,:] == [0,0] or keypoints_front[4,:] == [0,0] or keypoints_front[7,:] == [0,0]:
+		return 0, [0, 0, 0]			#if one of main keypoints is missing, stop ergonomic assessment
+ 
 	#side view
 	#step1 upper arm
-	angle_uarm = line_angle(keypoints_side[2,:], keypoints_side[3,:], keypoints_side[8,:], keypoints_side[1,:])  #normally from side view both shoulders can be detected.
-		#angle12 = line_angle(keypoints[5], keypoints[6], keypoints[8], keypoints[1])
+	if 3 in keypoints_side_zeros or 2 in keypoints_side_zeros:
+		angle_uarmr = 0
+	else:
+		angle_uarmr = line_angle(keypoints_side[2,:], keypoints_side[3,:], keypoints_side[8,:], keypoints_side[1,:])  #right upper arm
+	if 5 in keypoints_side_zeros or 6 in keypoints_side_zeros:
+		angle_uarml = 0
+	else:
+		angle_uarml = line_angle(keypoints_side[5,:], keypoints_side[6,:], keypoints_side[8,:], keypoints_side[1,:])		#left upper arm
+	angle_uarm = max(angle_uarmr,angle_uarml)
 
 	#step1a shoulder raised?
-	angle_shoulder = line_angle(keypoints_side[2,:], keypoints_side[1,:],keypoints_side[8,:], keypoints_side[1,:])  
+	if 2 in keypoints_side_zeros:
+		angle_shoulderr = 0
+	else:
+		angle_shoulderr = line_angle(keypoints_side[2,:], keypoints_side[1,:],keypoints_side[8,:], keypoints_side[1,:])  #right shoulder
+	if 5 in keypoints_side_zeros:
+		angle_shoulderl = 0
+	else:	
+		angle_shoulderl = line_angle(keypoints_side[5,:], keypoints_side[1,:],keypoints_side[8,:], keypoints_side[1,:])  #left shoulder
+	angle_shoulder = max(angle_shoulderr,angle_shoulderl)
 
 	#step2 lower arm
-	angle_larm = line_angle(keypoints_side[3,:], keypoints_side[4,:], keypoints_side[2,:], keypoints_side[3,:])
+	if angle_uarmr ==0 or 4 in keypoints_side_zeros:
+		angle_larmr = 0
+	else:
+		angle_larmr = line_angle(keypoints_side[3,:], keypoints_side[4,:], keypoints_side[2,:], keypoints_side[3,:])
+	if angle_uarml ==0 or 7 in keypoints_side_zeros:
+		angle_larml = 0
+	else:
+		angle_larml = line_angle(keypoints_side[6,:], keypoints_side[7,:], keypoints_side[5,:], keypoints_side[6,:])
+	angle_larm = max(angle_larmr,angle_larml)
 
 	#step3 wrist  also need hand points
-	angle_wrist = line_angle(keypoints_side[3,:], keypoints_side[4,:], keypoints_side[4,:], keypoints_side[34,:])
-	#step4 wrist twist
-	angle_wristtw = line_angle(keypoints_side[25,:], keypoints_side[34,:], keypoints_side[25,:], keypoints_side[27,:])
+	if 34 in keypoints_side_zeros or angle_larml ==0:
+		angle_wristl = 0
+	else: 
+		angle_wristl = line_angle(keypoints_side[6,:], keypoints_side[7,:], keypoints_side[4,:], keypoints_side[34,:])	#left wrist
+	if 43 in keypoints_side_zeros or angle_larmr ==0:
+		angle_wristr = 0
+	else: 
+		angle_wristr = line_angle(keypoints_side[3,:], keypoints_side[4,:], keypoints_side[4,:], keypoints_side[43,:])
+
 	#step9 neck
-	angle_neck = line_angle(keypoints_side[8,:], keypoints_side[1,:], keypoints_side[1,:], keypoints_side[17,:])
+	if 17 in keypoints_side_zeros:
+		angle_neck = 0
+	else:
+		angle_neck = line_angle(keypoints_side[8,:], keypoints_side[1,:], keypoints_side[1,:], keypoints_side[17,:])
 
 	#step10 trunk
 	angle_trunk = abs(line_angle(keypoints_side[8,:],keypoints_side[1,:], keypoints_side[1,:], keypoints_side[1,:]+[1, 0]) - 90)
 
+
+		
+
 	#from top front view
 	#step1a abduction of shoulder
-	angle_shou_abduct = line_angle(keypoints_front[2,:], keypoints_front[3,:], keypoints_front[8,:], keypoints_front[1,:])
-	angle_shou_abduct2 = line_angle(keypoints_front[5,:], keypoints_front[6,:], keypoints_front[8,:], keypoints_front[1,:])
+	if 3 in keypoints_front_zeros or 2 in keypoints_front_zeros:
+		angle_shou_abductr = 0
+	else:
+		angle_shou_abductr = line_angle(keypoints_front[2,:], keypoints_front[3,:], keypoints_front[8,:], keypoints_front[1,:])
+	if 5 in keypoints_front_zeros or 6 in keypoints_front_zeros:
+		angle_shou_abductl = 0
+	else:
+		angle_shou_abductl = line_angle(keypoints_front[5,:], keypoints_front[6,:], keypoints_front[8,:], keypoints_front[1,:])
+	angle_shou_abduct = max(angle_shou_abductr, angle_shou_abductl)
 
 	#step2a lower arm outside of body
-	angle_larm_out = line_angle(keypoints_front[3,:], keypoints_front[4,:], keypoints_front[8,:], keypoints_front[1,:])
-	angle_larm_out2 = line_angle(keypoints_front[6,:], keypoints_front[7,:], keypoints_front[8,:], keypoints_front[1,:])
+	if 3 in keypoints_front_zeros or 4 in keypoints_front_zeros:
+		angle_larm_outr = 0
+	else:
+		angle_larm_outr = line_angle(keypoints_front[3,:], keypoints_front[4,:], keypoints_front[8,:], keypoints_front[1,:])
+	if 6 in keypoints_front_zeros or 7 in keypoints_front_zeros:
+		angle_larm_outl = 0
+	else:
+		angle_larm_outl = line_angle(keypoints_front[6,:], keypoints_front[7,:], keypoints_front[8,:], keypoints_front[1,:])
+	angle_larm_out = max(angle_larm_outr, angle_larm_outl)
 
-	#step3a wrist bent from midline
-	angle_wristb = line_angle(keypoints_front[3,:], keypoints_front[4,:],keypoints_front[4,:], keypoints_front[34,:])
+	#step3a wrist bent from midline  need left&right hand point 9
+	if 34 in keypoints_front_zeros or angle_larm_outl ==0:
+		angle_wristbl = 0
+	else:
+		angle_wristbl = line_angle(keypoints_front[6,:], keypoints_front[7,:],keypoints_front[4,:], keypoints_front[34,:])	#left wrist
+	if 43 in keypoints_front_zeros or angle_larm_outr ==0:
+		angle_wristbr = 0
+	else:
+		angle_wristbr = line_angle(keypoints_front[3,:], keypoints_front[4,:],keypoints_front[4,:], keypoints_front[43,:])
+	angle_wristb = max(angle_wristbr, angle_wristbl)
+
+
+	#step4 wrist twist
+	if 25 in keypoints_front_zeros or 42 in keypoints_front_zeros or 26 in keypoints_front_zeros:
+		angle_wristtwr = 0
+	else:
+		angle_wristtwr = line_angle(keypoints_front[25,:], keypoints_front[42,:], keypoints_front[25,:], keypoints_front[26,:])
+	if 46 in keypoints_front_zeros or 63 in keypoints_front_zeros or 47 in keypoints_front_zeros:
+		angle_wristtwr = 0
+	else:
+		angle_wristtwr = line_angle(keypoints_front[46,:], keypoints_front[63,:], keypoints_front[46,:], keypoints_front[47,:])
+	angle_wristtw = max(angle_wristtwr, angle_wristtwl)
 
 	#step9a neck twist or side bent
-	angle_necktw = line_angle(keypoints_front[0,:], keypoints_front[1,:], keypoints_front[8,:], keypoints_front[1,:])
+	if 0 in keypoints_front_zeros:
+		angle_necktw = 0
+	else:
+		angle_necktw = line_angle(keypoints_front[0,:], keypoints_front[1,:], keypoints_front[8,:], keypoints_front[1,:])
 
 	#step10 trunk side bend
 	angle_trunkb = abs(line_angle(keypoints_front[8,:],keypoints_front[1,:], keypoints_front[1,:], keypoints_front[1,:]+[1, 0]) - 90)
@@ -101,13 +181,19 @@ def scoring(keypoints_front, keypoints_side):
 	angle_trunktw = line_angle(keypoints_front[2,:], keypoints_front[8,:], keypoints_front[5,:], keypoints_front[8,:])
 
 	#step11 legs evenly-balanced
-	angle_leg1 = line_angle(keypoints_front[9,:], keypoints_front[10,:], keypoints_front[10,:], keypoints_front[11,:])
-	angle_leg2 = line_angle(keypoints_front[12,:], keypoints_front[13,:], keypoints_front[13,:], keypoints_front[14,:])
+	if 9 in keypoints_front_zeros or 10 in keypoints_front_zeros or 11 in keypoints_front_zeros:
+		angle_leg1 = 0
+	else:
+		angle_leg1 = line_angle(keypoints_front[9,:], keypoints_front[10,:], keypoints_front[10,:], keypoints_front[11,:])
+	if 12 in keypoints_front_zeros or 13 in keypoints_front_zeros or 14 in keypoints_front_zeros:
+		angle_leg2 = 0
+	else:
+		angle_leg2 = line_angle(keypoints_front[12,:], keypoints_front[13,:], keypoints_front[13,:], keypoints_front[14,:])
 
 
 	#scoring
 	#step1 &1a
-	if abs(angle_uarm)<20:
+	if abs(angle_uarm)<20 and angle_uarm !=0:
 		U = U+1
 	elif angle_uarm<-20 or angle_uarm>20 and angle_uarm<45:
 		U = U+2
@@ -129,25 +215,23 @@ def scoring(keypoints_front, keypoints_side):
 	elif angle_larm>100 or angle_larm<80 and angle_larm>5:
 		L = L+2
 
-	if angle_larm_out>5 or angle_larm_out<-5:
-		L =  L+1
-	if angle_larm_out2>5 or angle_larm_out2<-5:
+	if abs(angle_larm_outr)>10 or abs(angle_larm_outl)>10:
 		L =  L+1
 	if L > 3:
 		L = 3
 	#step3 & 3a
-	if angle_wrist<2 or angle_wrist>-2:
+	if abs(angle_wrist)<2:
 		W1 = W1+1
-	elif angle_wrist<12 or angle_wrist>-12:
+	elif abs(angle_wrist)<15:
 		W1 = W1+2
-	elif angle_wrist>15 or angle_wrist<-15:
+	elif abs(angle_wrist)>15:
 		W1 = W1+3
 
-	if angle_wristb>5 or angle_wristb<-5:
+	if abs(angle_wristb)>10:
 		W1 = W1+1
 
 	#step4
-	if angle_wristtw>30:
+	if abs(angle_wristtw)<30:
 		W2 =  W2+1
 	else:
 		W2 = W2+2
@@ -162,7 +246,7 @@ def scoring(keypoints_front, keypoints_side):
 	elif angle_neck<0:
 		N = N+4
 
-	if angle_necktw>5 or angle_necktw<-5:
+	if abs(angle_necktw)>10:
 		N = N+1
 
 	#step10 & 10a
@@ -185,8 +269,7 @@ def scoring(keypoints_front, keypoints_side):
 	if angle_leg1>170 and angle_leg2>170:
 		LE = LE+1
 	else: LE = LE+2
-	if U == 0 or L== 0 or W1== 0 or W2== 0 or N== 0 or T== 0 or LE == 0:
-		return 0, [0, 0, 0]	
+
 	#lookup table A
 	UL = U*10 + L
 	WW = W1*100 + W2*10
