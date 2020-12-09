@@ -145,7 +145,7 @@ def scoring(keypoints_front, keypoints_side):
 		angle_larm_outl = line_angle(keypoints_front[6,:], keypoints_front[7,:], keypoints_front[8,:], keypoints_front[1,:])
 	angle_larm_out = max(angle_larm_outr, angle_larm_outl)
 
-	#step3a wrist bent from midline  need left&right hand point 9
+	#step3a wrist bent from midline 
 	if 34 in keypoints_front_zeros or angle_larm_outl ==0:
 		angle_wristbl = 0
 	else:
@@ -159,9 +159,9 @@ def scoring(keypoints_front, keypoints_side):
 
 	#step4 wrist twist
 	if 25 in keypoints_front_zeros or 42 in keypoints_front_zeros or 26 in keypoints_front_zeros:
-		angle_wristtwr = 0
+		angle_wristtwl = 0
 	else:
-		angle_wristtwr = line_angle(keypoints_front[25,:], keypoints_front[42,:], keypoints_front[25,:], keypoints_front[26,:])
+		angle_wristtwl = line_angle(keypoints_front[25,:], keypoints_front[42,:], keypoints_front[25,:], keypoints_front[26,:])
 	if 46 in keypoints_front_zeros or 63 in keypoints_front_zeros or 47 in keypoints_front_zeros:
 		angle_wristtwr = 0
 	else:
@@ -182,24 +182,24 @@ def scoring(keypoints_front, keypoints_side):
 
 	#step11 legs evenly-balanced
 	if 9 in keypoints_front_zeros or 10 in keypoints_front_zeros or 11 in keypoints_front_zeros:
-		angle_leg1 = 0
+		angle_legr = 0
 	else:
-		angle_leg1 = line_angle(keypoints_front[9,:], keypoints_front[10,:], keypoints_front[10,:], keypoints_front[11,:])
+		angle_legr = line_angle(keypoints_front[9,:], keypoints_front[10,:], keypoints_front[10,:], keypoints_front[11,:])
 	if 12 in keypoints_front_zeros or 13 in keypoints_front_zeros or 14 in keypoints_front_zeros:
-		angle_leg2 = 0
+		angle_legl = 0
 	else:
-		angle_leg2 = line_angle(keypoints_front[12,:], keypoints_front[13,:], keypoints_front[13,:], keypoints_front[14,:])
+		angle_legl = line_angle(keypoints_front[12,:], keypoints_front[13,:], keypoints_front[13,:], keypoints_front[14,:])
 
 
 	#scoring
 	#step1 &1a
-	if abs(angle_uarm)<20 and angle_uarm !=0:
+	if abs(angle_uarm)<20:
 		U = U+1
-	elif angle_uarm<-20 or angle_uarm>20 and angle_uarm<45:
+	elif abs(angle_uarm)>20 and angle_uarm<45:
 		U = U+2
 	elif angle_uarm>45 and angle_uarm<90:
 		U = U+3
-	elif angle_uarm>90 and angle_uarm<500:
+	elif angle_uarm>90:
 		U = U+4
 	
 
@@ -214,11 +214,14 @@ def scoring(keypoints_front, keypoints_side):
 		L = L+1
 	elif angle_larm>100 or angle_larm<80 and angle_larm>5:
 		L = L+2
+	elif angle_larm == 0:
+		L = 1
 
 	if abs(angle_larm_outr)>10 or abs(angle_larm_outl)>10:
 		L =  L+1
 	if L > 3:
 		L = 3
+
 	#step3 & 3a
 	if abs(angle_wrist)<2:
 		W1 = W1+1
@@ -237,7 +240,7 @@ def scoring(keypoints_front, keypoints_side):
 		W2 = W2+2
 
 	#step9 & 9a
-	if angle_neck>0 and angle_neck<10:
+	if angle_neck>=0 and angle_neck<10:
 		N = N+1
 	elif angle_neck>10 and angle_neck<20:
 		N = N+2
@@ -266,8 +269,10 @@ def scoring(keypoints_front, keypoints_side):
 		T = T+1
 
 	#step11 
-	if angle_leg1>170 and angle_leg2>170:
+	if angle_legr>170 and angle_legl>170:
 		LE = LE+1
+	elif angle_legr == 0 and angle_legl == 0:
+		LE = 1
 	else: LE = LE+2
 
 	#lookup table A
@@ -280,7 +285,7 @@ def scoring(keypoints_front, keypoints_side):
 
 	risklevel = lookup(UL,WW,N,TLE,MF1,MF2)
 	
-	main_angles = np.asarray([angle_uarm, angle_larm, angle_neck, angle_trunk])
+	main_angles = np.asarray([angle_uarmr,angle_uarml, angle_larmr,angle_larml,angle_shoulderr,angle_shoulderl,angle_wristr,angle_wristl, angle_neck,angle_larm_outr,angle_larm_outl,angle_wristbr,angle_wristbl,angle_necktw,angle_trunkb,angle_trunktw, angle_legr, angle_legl,angle_trunk,	U,L ,W1 ,W2 ,N ,T ,LE ,UL ,WW ,N ,TLE ,MF1 ,MF2])
 
 	return risklevel, main_angles
 
