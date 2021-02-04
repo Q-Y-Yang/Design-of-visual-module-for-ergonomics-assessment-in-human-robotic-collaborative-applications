@@ -43,13 +43,6 @@ mocap_ergonomic
 Remember to source after building: `. install/setup.bash`<br>
 Run: `ros2 run mocap_ergonomic mocaphttps://github.com/facebookresearch/frankmocap_ergonomic.py`<br>
 
-syn_img_frank
---
-* Subscribe two topics synchronously using messages filters in ROS Melodic.<br>
-* Approximate time synchronously subscribe images(side view and front-top view) from two cameras, rotate and resize side view image. Finally, publish the synchronized images from different views sequentially for later processing by FrankMocap.<br>
-* Output: `/syn_img`: synchronized and integrated image.<br>
-* Run: `rosrun syn_img_frank syn_img_frank`<br>
-
 * Input:<br>
 Subscribing `/side_img` and `/front_img` processed by syn_img_frank.<br>
 * Output:<br>
@@ -58,6 +51,13 @@ Subscribing `/side_img` and `/front_img` processed by syn_img_frank.<br>
 3. `/risk`: publish risk levels from ergonomic assessment.<br>
 
 * `eva3d` module: performing ergonomic assessment according to Rapid Upper Limbs Assessment(RULA) criteria based on 3D body and hands keypoints obtained from FrankMocap.<br>
+
+syn_img_frank
+--
+* Subscribe two topics synchronously using messages filters in ROS Melodic.<br>
+* Approximate time synchronously subscribe images(side view and front-top view) from two cameras, rotate and resize side view image. Finally, publish the synchronized images from different views sequentially for later processing by FrankMocap.<br>
+* Output: `/syn_img`: synchronized and integrated image.<br>
+* Run: `rosrun syn_img_frank syn_img_frank`<br>
 
 ROS1 Bridge
 --
