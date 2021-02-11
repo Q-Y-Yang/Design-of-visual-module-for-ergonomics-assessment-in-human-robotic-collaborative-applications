@@ -1,0 +1,149 @@
+
+
+Some errors encountered during installation.
+
+1. errors when configuration
+CMake Error at /usr/local/share/cmake-3.18/Modules/ExternalProject.cmake:2555 (message):
+  No download info given for 'openpose_lib' and its source directory:
+
+   /home/student/Downloads/openpose-1.6.0/3rdparty/caffe
+
+  is not an existing non-empty directory.  Please specify one of:
+
+   * SOURCE_DIR with an existing non-empty directory
+   * DOWNLOAD_COMMAND
+   * URL
+   * GIT_REPOSITORY
+   * SVN_REPOSITORY
+   * HG_REPOSITORY
+   * CVS_REPOSITORY and CVS_MODULE
+Call Stack (most recent call first):
+  /usr/local/share/cmake-3.18/Modules/ExternalProject.cmake:3206 (_ep_add_download_command)
+  CMakeLists.txt:805 (ExternalProject_Add)
+
+solution:
+~/3rdparty/caffe is empty download via git. In the repository caffe is a sub module, so I download 
+it manually and put it in the folder ~/3rdparty/caffe. -> solved!
+
+
+
+
+2.Cuda check failed (38 vs. 0): no CUDA-capable device is detected
+You seem to have a mix of driver components from several different drivers. This is a broken config
+
+solution:
+delete all drivers in Software&Update;    messy 
+
+3. Error:
+Cuda check failed (35 vs. 0): CUDA driver version is insufficient for CUDA runtime version
+version of driver is too low. install the recommended 450version
+
+
+
+
+4. Xtion 0601 runs using openni2, and 0600 runs using openni. 
+
+5. To use python api of openpose, build python at configuration stage in Cmake-gui(see openpose/doc/modules/python_module.md )
+ERROR:
+home/student/openpose/3rdparty/pybind11does not contain a CMakeLists.txt file.
+Reason: submodule was not downloaded
+Solution: download the submodule pybind11 by yourself:
+git clone https://github.com/pybind/pybind11.git
+
+also see:
+https://github.com/CMU-Perceptual-Computing-Lab/openpose/issues/1068
+
+6. cannot import name pyopenpose
+check  /usr/local/python/openpose/pyopenpose.cpython-36m-x86_64-linux-gnu.so
+if above file not exists, go to build folder, run sudo make install
+
+
+7.Error: a bytes-like object is required, not 'NoneType'
+in python script change ../../../examples/media/COCO_val2014_000000000192.jpg and ../../../models/" to "/home/student/openpose/examples/media/COCO_val2014_000000000192.jpg" and "/home/student/openpose/models/"
+make sure COCO_val2014_000000000192.jpg exists
+
+
+7. F1011 15:16:13.159169  3771 cudnn_conv_layer.cpp:53] Check failed: status == CUDNN_STATUS_SUCCESS (4 vs. 0)  CUDNN_STATUS_INTERNAL_ERROR
+F1101 14:08:48.200486 29455 syncedmem.cpp:71] Check failed: error == cudaSuccess (2 vs. 0)  out of memory
+out of memory   solution: restart PC
+
+
+
+
+8. use pip to install pytorch instead of using conda in anaconda.
+check cuda version, go to pytorch website to select a proper version
+here cuda10.0
+# CUDA 10.0
+pip install torch==1.2.0 torchvision==0.4.0
+Test: python3
+import pytorch
+import torchvision
+print(torch.cuda.is_available())
+If returns true, success.
+
+
+9. File "/home/student/frankmocap-master/demo/demo_bodymocap.py", line 74, in run_body_mocap
+    image_path = osp.join(args.out_dir, "frames", f"scene_{cur_frame:05d}.jpg")
+  File "/usr/lib/python3.6/posixpath.py", line 80, in join
+    a = os.fspath(a)
+TypeError: expected str, bytes or os.PathLike object, not NoneType
+ solution: change the image path
+
+
+10. Error:
+Cuda check failed (30 vs. 0): unknown error
+solution: 
+sudo apt-get install nvidia-modprobe
+
+
+
+Some notes in ROS
+
+1. Connect xtion in melodic:
+roslaunch openni2_launch openni2.launch
+
+
+2. change python version:
+sudo update-alternatives --config python
+
+Will show you an error:
+update-alternatives: error: no alternatives for python3 
+
+You need to update your update-alternatives , then you will be able to set your default python version.
+
+sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.4 1
+sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.6 2
+
+Then run :
+
+sudo update-alternatives --config python
+
+Set python3.6 as default.
+
+Or use the following command to set python3.6 as default:
+
+sudo update-alternatives  --set python /usr/bin/python3.6
+
+3. ERROR: cannot import cv2 but cv2 is installed.
+careful about python version. the installed opencv-python is of python2.
+But ros1 supports python2, ros2 supports python3(at least python 3.5). 
+So ros2 node runs in python3, and cannot find the installed cv2 of python2.
+The solution is :
+(sudo apt-get install python3-pip  //install pip3)
+pip3 install --upgrade pip    // update pip3 first, otherwise errors might occur. 
+pip3 install opencv-python
+
+
+
+4. Run the ROS1 bridge
+
+    In your ros1_bridge_ws ROS2 workspace, source the workspace if you haven’t
+
+cd ~/ros1_bridge_ws
+source install/setup.bash
+
+Export the ROS_MASTER_URI environment variable:
+export ROS_MASTER_URI=http://localhost:11311
+
+Run the bridge:
+ros2 run ros1_bridge dynamic_bridge
