@@ -41,7 +41,7 @@ mocap_ergonomic
 * Installing [FrankMocap](https://github.com/facebookresearch/frankmocap) firstly following its [installation](https://github.com/facebookresearch/frankmocap/blob/master/docs/INSTALL.md) instructions.<br>
 * Build in ROS 2 workspace: `colcon build --packages-select mocap_ergonomic`<br>
 Remember to source after building: `. install/setup.bash`<br>
-Run: `ros2 run mocap_ergonomic mocaphttps://github.com/facebookresearch/frankmocap_ergonomic.py`<br>
+Run: `ros2 run mocap_ergonomic mocap_ergonomic.py`<br>
 
 * Input:<br>
 Subscribing `/side_img` and `/front_img` processed by syn_img_frank.<br>
