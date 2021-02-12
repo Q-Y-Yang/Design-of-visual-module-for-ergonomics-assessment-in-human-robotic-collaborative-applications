@@ -1,6 +1,6 @@
 
 
-Some errors encountered during installation.
+Some errors encountered during openpose installation.
 
 1. errors when configuration
 CMake Error at /usr/local/share/cmake-3.18/Modules/ExternalProject.cmake:2555 (message):

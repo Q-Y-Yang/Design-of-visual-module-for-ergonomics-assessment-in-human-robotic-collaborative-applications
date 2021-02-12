@@ -67,4 +67,7 @@ ROS1 Bridge
 Note
 --
 You may have problems when using modules from OpenPose and FrankMocap in these packages. Pay attention to the path.<br>
-The installation paths of OpenPose and FrankMocap in this research internship are `/home/student/openpose` and `/home/studnet/frankmocap`.
+The installation paths of OpenPose and FrankMocap in this research internship are `/home/student/openpose` and `/home/studnet/frankmocap`.<br>
+The installed version:<br>
+FrankMocap: commit 88d6dce8828e609d9f576e8e2a78800bd9184069 (HEAD -> master, origin/master, origin/HEAD)
+OpenPose: commit de3bea5f715e877c3fc90ad975123a62ec6a42a3 (HEAD -> master, origin/master, origin/HEAD)
