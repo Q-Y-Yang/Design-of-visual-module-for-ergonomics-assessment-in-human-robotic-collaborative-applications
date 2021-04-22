@@ -8,7 +8,7 @@ pose_ergonomic
 * Installing [openpose](https://github.com/CMU-Perceptual-Computing-Lab/openpose) firstly following its [prerequisites](https://github.com/CMU-Perceptual-Computing-Lab/openpose/blob/master/doc/installation/prerequisites.md) and [installation](https://github.com/CMU-Perceptual-Computing-Lab/openpose/tree/master/doc/installation) instructions.<br>
 * Build in ROS 2 workspace: `colcon build --packages-select pose_ergonomic`<br>
 Remember to source after building: `. install/setup.bash`<br>
-Run: `ros2 run pose_ergonomic pose_ergonomic.py`<br>
+Run: `ros2 run pose_ergonomic pose_ergonomic`<br>
 
 * Input options: <br>
 `--save_result`: True: save results; False: do not save.<br>
@@ -63,6 +63,17 @@ ROS1 Bridge
 --
 * ROS1 Bridge is necessary to transmit synchronized images from ROS melodic to ROS eloquent.
 * Following the "build the ROS1 Bridge" and "run the ROS1 Bridge" parts of instructions [here](https://industrial-training-master.readthedocs.io/en/melodic/_source/session7/ROS1-ROS2-bridge.html) to build and run your ROS1 Bridge.
+
+
+Ergonomics Results Analysis
+--
+In order to compare OpenPose results and Inverse Kinematics (IK) result and analyze accuracy of OpenPose detection: 
+1. Establish a `ROS1 Bridge`.<br>
+2. Run `syn_img_frank` following the instruction above.<br>
+3. Run `pose_ergonomic`: `ros2 run pose_ergonomic pose_ergonomic save_result False`<br>
+4. Play the dataset (a rosbag):<br>
+`rosbag play -r 0.11 name of the rosbag`<br>
+In order to synchronize IK frames and OpenPose frames, a proper publish rate needs to be chosen. The publish rate here used is 0.11.<br>
 
 Note
 --

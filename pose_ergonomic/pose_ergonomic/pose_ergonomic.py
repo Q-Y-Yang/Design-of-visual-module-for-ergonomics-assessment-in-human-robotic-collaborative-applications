@@ -5,9 +5,9 @@
 #function: 
 #Subscribe synchronized frames from different cameras
 #Detect body and hands keypoints by OpenPose python API
-#Performing ergonomics assessment
+#Performing Rapid Upper Limbs Assessment(RULA) to evaluate ergonomics
 #inputs: two synchronized image messages with header including timestamp captured by two cameras from side view and front-top view
-#outputs: Image with keypoints annotation, joint angles, risk level of ergonomic assessment 
+#outputs: Image with keypoints annotation,  keypoints coordinates, risk level of ergonomic assessment 
  
 import rclpy
 from rclpy.node import Node
@@ -58,6 +58,8 @@ class pose_ergonomic(Node):
 
 			# Flags
 			parser = argparse.ArgumentParser()
+			parser.add_argument("--image_path", default="/home/student/openpose/examples/media/COCO_val2014_000000000241.jpg", help="Process an image. Read all standard formats (jpg, png, bmp, etc.).")
+			parser.add_argument("--single_person", default="/home/student/openpose/examples/media/COCO_val2014_000000000241.jpg", help="Process an image. Read all standard formats (jpg, png, bmp, etc.).")
 			parser.add_argument("--result_path", default="/home/student/result/", help="set a path to save results")
 			parser.add_argument("--single_view", default=False, type= bool, help="single view or two views")
 			parser.add_argument("--rot90", default=False, type= bool, help="clockwise rotate 90 degrees")
@@ -71,6 +73,7 @@ class pose_ergonomic(Node):
 			self.camera_topic = args.camera_topic
 			self.save_result = args.save_result
 			self.ergonomic = args.ergonomic
+			self.keypoints_side =  np.empty((25+21+21,3),dtype = float)
 			# Custom Params (refer to include/openpose/flags.hpp for more parameters)
 			params = dict()
 			params["model_folder"] = "/home/student/openpose/models/"
@@ -94,8 +97,9 @@ class pose_ergonomic(Node):
 		#subscriber and publisher initialization
 		#input subscriber
 		self.br = CvBridge()
-		self.subscription_synimg = self.create_subscription(Image, self.camera_topic, self.callback,10)
-		
+		#self.subscription_synimg = self.create_subscription(Image, self.camera_topic, self.callback,10)
+		self.subscription_img_side = self.create_subscription(Image, '/side_img', self.callback_side,10)
+		self.subscription_img_front = self.create_subscription(Image, '/front_img', self.callback_front,10)
 		#output publisher
 		self.publisher_pose = self.create_publisher(Image,'/pose',10)	#images with keypoints annotation
 		#self.publisher_keypoints = self.create_publisher(Float32MultiArray,'/keypoints',10)	#keypoints coordinates
@@ -120,10 +124,27 @@ class pose_ergonomic(Node):
 		self.old_load = np.zeros((1,2),dtype = float)
 		self.aver_load = np.zeros((1,2),dtype = float)   
 
-	def callback(self,data):
+	def callback_side(self,data):
 		#input image
 		print(self.frame_No)
-		start = time.time()
+		#self.start = time.time()
+		try:
+			if self.rot90 is True:
+				cv_img = cv2.flip(cv2.transpose(self.br.imgmsg_to_cv2(data, "bgr8")), 0)
+			else:
+				cv_img = self.br.imgmsg_to_cv2(data, "bgr8")
+			self.datum.cvInputData = cv_img	#imageToProcess
+		except CvBridgeError as e:
+			print(e)
+		self.opWrapper.emplaceAndPop([self.datum])		
+
+		body = np.array(self.datum.poseKeypoints)
+		hands = np.array(self.datum.handKeypoints)
+		
+		self.keypoints_side = np.concatenate((body[0],hands[0][0],hands[1][0]))
+
+	def callback_front(self,data):
+		#input image
 		try:
 			if self.rot90 is True:
 				cv_img = cv2.flip(cv2.transpose(self.br.imgmsg_to_cv2(data, "bgr8")), 0)
@@ -134,6 +155,9 @@ class pose_ergonomic(Node):
 			self.frame_id = self.frame_id + 1
 			self.old_average = self._average
 			self.old_load = self.load
+
+		#image_path = "/home/student/openpose/examples/image/2.jpg"
+		#imageToProcess = cv2.imread(image_path)
 			self.datum.cvInputData = cv_img	#imageToProcess
 		except CvBridgeError as e:
 			print(e)
@@ -145,26 +169,22 @@ class pose_ergonomic(Node):
 		angles = Float32MultiArray()
 		#hands = Float32MultiArray()
 	
-		#check if detect at least a person and a hand, if no, exist
+		#check if detect a person and a hand, if no, exit
 		try:
 			[i,j,k] = np.array(self.datum.poseKeypoints).shape  #i persons, j keypoints, k=3
 		except ValueError:
 			print('ERROR: No one detected!')
 			i = 0	
-			#sys.exit(-1)	#exist
+			#sys.exit(-1)
 		try:
 			[l,m,n,r] = np.array(self.datum.handKeypoints).shape	#l hands, m persons, n keypoints, r=3
 		except ValueError:
 			print('ERROR: Hand not detected!')
 			i = 0
-			#sys.exit(-1)	#exist
-		#if i !=2:
-		#cv2.imwrite('/home/student/arm/'+str(self.frame_id)+'.jpg',self.datum.cvOutputData)
-		#check if there is two persons
-		#cv2.imshow("OpenPose 1.6.0 - Tutorial Python API", self.datum.cvOutputData)
-		#cv2.waitKey(0)	
+			#sys.exit(-1)
+
 		
-		if self.single_view is False and i == 2:
+		if i == 1:
 	
 			#save datum.poseKeypoints in a numpy array
 			#body = np.zeros(i*j*k)
@@ -172,10 +192,10 @@ class pose_ergonomic(Node):
 			body = np.array(self.datum.poseKeypoints)
 			hands = np.array(self.datum.handKeypoints)
 			
-			keypoints_side = np.concatenate((body[0],hands[0][0],hands[0][1]))
-			keypoints_front = np.concatenate((body[1],hands[1][0],hands[1][1]))
+			keypoints_front = np.concatenate((body[0],hands[0][0],hands[1][0]))
+
 			#tuple! to publish array msgs
-			whole_body = np.array(np.concatenate((keypoints_side, keypoints_front))).reshape(134,3)
+			whole_body = np.array(np.concatenate((self.keypoints_side, keypoints_front))).reshape(134,3)
 			#tup_wb = tuple(whole_body)
 			#print(whole_body)
 			#keypoints_whole.data = tup_wb
@@ -197,11 +217,11 @@ class pose_ergonomic(Node):
 					print('Alert: repeated heavy load')
 
 		    #ergonomics assessment here
-			if keypoints_front is not None and keypoints_side is not None:
+			if keypoints_front is not None and self.keypoints_side is not None:
 				if self.ergonomic == 1:
-					ergonomic = ergonomic_evaluation.scoring(keypoints_front,keypoints_side,self.load)
+					ergonomic = ergonomic_evaluation.scoring(keypoints_front,self.keypoints_side,self.load)
 				elif self.ergonomic == 2:
-					ergonomic = ergonomic_nerpa.scoring(keypoints_front,keypoints_side,self.load)
+					ergonomic = ergonomic_nerpa.scoring(keypoints_front,self.keypoints_side,self.load)
 				
 				self.angles = ergonomic[2]
 				self.main_angles = ergonomic[1]
@@ -210,9 +230,9 @@ class pose_ergonomic(Node):
 			else:
 				print('Not sufficient input keypoints')
 
-			end = time.time()
-			fps = 1 / (end - start)
-			print('FPS:'+str(fps))
+			#end = time.time()
+			#fps = 1 / (end - self.start)
+			#print('FPS:'+str(fps))
 			
 			if self.risklevel != 0:
 		    #incremental average and variance
@@ -255,8 +275,8 @@ class pose_ergonomic(Node):
 						file_handle.write('\nvariance\n')
 						file_handle.write(str(self.variance))
 					position = (50,50)
-					txt = 'risk:'+str(risk)+'\nFPS:'+str(fps)
-					cv2.putText(self.datum.cvOutputData,txt, position, cv2.FONT_HERSHEY_SIMPLEX, 6, (255,255, 255), 25)
+					#txt = 'risk:'+str(risk)+'\nFPS:'+str(fps)
+					#cv2.putText(self.datum.cvOutputData,txt, position, cv2.FONT_HERSHEY_SIMPLEX, 6, (255,255, 255), 25)
 
 				
 
@@ -266,20 +286,28 @@ class pose_ergonomic(Node):
 			
 			body = np.array(self.datum.poseKeypoints)
 			hands = np.array(self.datum.handKeypoints)
-			keypoints_side = np.concatenate((body[0],hands[0][0]))  #body and only one hand here
+			
+			keypoints_side = np.concatenate((body[0],hands[0][0],hands[1][0]))  #body and only one hand here
 		
 		
 		    #ergonomics assessment here
 			if keypoints_side is not None:
-				upperarm, lowerarm = arm_ergonomic.scoring(keypoints_side)
+				#upperarm, lowerarm = arm_ergonomic.scoring(keypoints_side)
+				#angles.data = tuple([upperarm, lowerarm])
+				ergonomic = ergonomic_evaluation.scoring(keypoints_side,keypoints_side,self.load)
+				self.angles = ergonomic[2]
+				self.main_angles = ergonomic[1]
+				self.risklevel = ergonomic[0]
+				angles.data = tuple(self.angles)
+				self.publisher_angles.publish(angles)
 				if self.save_result is True:
 					with open(str(self.result_path) + 'results.txt', 'a') as file_handle:
 						file_handle.write('\nframe_id:')
 						file_handle.write(str(self.frame_id))
 						file_handle.write('\nupperarm:')
-						file_handle.write(str(upperarm))
+					#	file_handle.write(str(upperarm))
 						file_handle.write('\nlowerarm\n')
-						file_handle.write(str(lowerarm))
+					#	file_handle.write(str(lowerarm))
 			else:
 				print('Not sufficient input keypoints')
 

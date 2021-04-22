@@ -44,7 +44,7 @@ def lookup(UL,WW,N,TLE,F1,F2):
 
 	scoreC = tableC[np.argwhere(tableC == WA)[0,0], np.argwhere(tableC == NTL)[0,1]]
 	
-	return scoreC
+	return scoreB, scoreC
 
 def scoring(keypoints_front, keypoints_side, load):
 
@@ -70,8 +70,8 @@ def scoring(keypoints_front, keypoints_side, load):
 	keypoints_side_zeros = np.array(np.where(keypoints_side[:,0]==0.0))
 	keypoints_front_zeros = np.array(np.where(keypoints_front[:,0]==0.0))
 	#check main keypoints coordinates
-	if 1 in keypoints_side_zeros or 8 in keypoints_side_zeros or 1 in keypoints_front_zeros or 8 in keypoints_front_zeros or 4 in keypoints_front_zeros or 7 in keypoints_front_zeros:
-		return 0, [0, 0, 0], np.zeros((1,20), dtype = float)			#if one of main keypoints is missing, stop ergonomic assessment
+	if 1 in keypoints_side_zeros or 8 in keypoints_side_zeros or 1 in keypoints_front_zeros or 8 in keypoints_front_zeros or 2 in keypoints_front_zeros or 5 in keypoints_front_zeros:
+		return 0, [0, 0, 0], [0.0,0.0,0.0,0.0,0.0]#np.zeros((1,20), dtype = float)			#if one of main keypoints is missing, stop ergonomic assessment
  
 	#side view
 	#step1 upper arm
@@ -87,6 +87,7 @@ def scoring(keypoints_front, keypoints_side, load):
 		angle_uarm = max(angle_uarmr,angle_uarml)
 	else: 	#score 1-2
 		angle_uarm = min(angle_uarmr,angle_uarml)
+	#angle_uarm=angle_uarml      #only for IK    
 
 	#step1a shoulder raised?
 	if 2 in keypoints_side_zeros:
@@ -109,6 +110,7 @@ def scoring(keypoints_front, keypoints_side, load):
 	else:
 		angle_larml = line_angle(keypoints_side[6,:], keypoints_side[7,:], keypoints_side[1,:], keypoints_side[8,:])
 	angle_larm = max(abs(angle_larmr),abs(angle_larml))
+	#angle_larm = angle_larml        #only for IK
 
 	#step3 wrist  also need hand points
 	if 34 in keypoints_side_zeros or angle_larml ==0:
@@ -302,10 +304,12 @@ def scoring(keypoints_front, keypoints_side, load):
 	elif load[0,1] > 22:
 		F2 = 3
 
-	risklevel = lookup(UL,WW,N,TLE,F1,F2)
+	scoreB, risklevel = lookup(UL,WW,N,TLE,F1,F2)
 	
 	angles = np.asarray([angle_uarmr, angle_uarml, angle_larmr,angle_larml,angle_shoulderr,angle_shoulderl,angle_wristr,angle_wristl, angle_larm_outr,angle_larm_outl,angle_wristbr,angle_wristbl,angle_wristtw,angle_neck, angle_necktw,angle_trunk,angle_trunkb,angle_trunktw, angle_legr, angle_legl])
 	main_angles= np.asarray([angle_uarm, angle_larm,angle_neck, angle_trunk])
+	angles_scores = np.asarray([angle_uarml,angle_larml,float(WW),float(scoreB),float(risklevel)])
 	#print(risklevel, main_angles, angles)
-	return risklevel, main_angles, angles
+	
+	return risklevel, main_angles, angles_scores#angles
 
