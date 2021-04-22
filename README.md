@@ -32,7 +32,7 @@ syn_img_pub
 * Subscribe two topics synchronously using messages filters in ROS Melodic.<br>
 * Approximate time synchronously subscribe images(side view and front-top view) from two cameras, rotate and resize side view image to make the two synchronized images into one image for later processing by OpenPose.<br>
 * Output: `/syn_img`: synchronized and integrated image.<br>
-*  Run: `rosrun syn_img_pub syn_img_pub`<br>
+*  Run: `rosrun syn_img_pub syn_img_pub.py`<br>
 
 mocap_ergonomic
 --
@@ -41,7 +41,7 @@ mocap_ergonomic
 * Installing [FrankMocap](https://github.com/facebookresearch/frankmocap) firstly following its [installation](https://github.com/facebookresearch/frankmocap/blob/master/docs/INSTALL.md) instructions.<br>
 * Build in ROS 2 workspace: `colcon build --packages-select mocap_ergonomic`<br>
 Remember to source after building: `. install/setup.bash`<br>
-Run: `ros2 run mocap_ergonomic mocap_ergonomic.py`<br>
+Run: `ros2 run mocap_ergonomic mocap_ergonomic`<br>
 
 * Input:<br>
 Subscribing `/side_img` and `/front_img` processed by syn_img_frank.<br>
@@ -57,7 +57,7 @@ syn_img_frank
 * Subscribe two topics synchronously using messages filters in ROS Melodic.<br>
 * Approximate time synchronously subscribe images(side view and front-top view) from two cameras, rotate and resize side view image. Finally, publish the synchronized images from different views sequentially for later processing by FrankMocap.<br>
 * Output: `/syn_img`: synchronized and integrated image.<br>
-* Run: `rosrun syn_img_frank syn_img_frank`<br>
+* Run: `rosrun syn_img_frank syn_img_frank.py`<br>
 
 ROS1 Bridge
 --
@@ -67,7 +67,7 @@ ROS1 Bridge
 
 Ergonomics Results Analysis
 --
-In order to compare OpenPose results and Inverse Kinematics (IK) result and analyze accuracy of OpenPose detection: 
+In order to compare OpenPose results and Inverse Kinematics (IK) results, and analyze accuracy of OpenPose detection: 
 1. Establish a `ROS1 Bridge`.<br>
 2. Run `syn_img_frank` following the instruction above.<br>
 3. Run `pose_ergonomic`: `ros2 run pose_ergonomic pose_ergonomic save_result False`<br>
